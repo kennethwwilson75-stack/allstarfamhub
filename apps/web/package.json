@@ -1,0 +1,14 @@
+{
+  "name": "@allstarfamhub/web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo 'web build placeholder — set up in Step 7'",
+    "dev": "echo 'web dev placeholder — set up in Step 7'",
+    "lint": "echo 'web lint placeholder — set up in Step 7'",
+    "typecheck": "echo 'web typecheck placeholder — set up in Step 7'"
+  },
+  "dependencies": {
+    "@allstarfamhub/shared": "workspace:*"
+  }
+}

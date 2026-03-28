@@ -1,0 +1,19 @@
+{
+  "name": "@allstarfamhub/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/server.js",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "seed": "tsx ../scripts/seed.ts"
+  },
+  "dependencies": {
+    "@allstarfamhub/shared": "workspace:*",
+    "@allstarfamhub/connectors": "workspace:*"
+  }
+}

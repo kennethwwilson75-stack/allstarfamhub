@@ -1,0 +1,29 @@
+{
+  "name": "allstarfamhub",
+  "private": true,
+  "version": "1.0.0",
+  "description": "All Star Fam Hub — unified family scheduling intelligence platform",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r --parallel dev",
+    "dev:workers": "pnpm --filter @allstarfamhub/workers dev",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "prisma:migrate": "pnpm --filter @allstarfamhub/api prisma migrate dev",
+    "prisma:generate": "pnpm --filter @allstarfamhub/api prisma generate",
+    "seed": "pnpm --filter @allstarfamhub/api seed",
+    "clean": "pnpm -r clean"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.57.2"
+  }
+}
