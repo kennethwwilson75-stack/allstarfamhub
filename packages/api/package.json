@@ -13,7 +13,17 @@
     "seed": "tsx ../scripts/seed.ts"
   },
   "dependencies": {
+    "@allstarfamhub/connectors": "workspace:*",
     "@allstarfamhub/shared": "workspace:*",
-    "@allstarfamhub/connectors": "workspace:*"
+    "@prisma/client": "^5.22.0",
+    "fastify": "^5.3.3",
+    "@fastify/cors": "^11.0.1",
+    "@fastify/websocket": "^11.0.2",
+    "@fastify/rate-limit": "^10.2.2",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.9"
   }
 }

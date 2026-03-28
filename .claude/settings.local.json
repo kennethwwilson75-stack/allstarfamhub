@@ -5,7 +5,9 @@
       "Bash(pnpm add:*)",
       "Bash(pnpm approve-builds:*)",
       "Bash(pnpm build:*)",
-      "Bash(pnpm lint:*)"
+      "Bash(pnpm lint:*)",
+      "Bash(node -e \"const p=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(''''/dev/stdin'''',''''utf8''''\\)\\); p.pnpm = p.pnpm || {}; p.pnpm.onlyBuiltDependencies = [''''prisma'''',''''@prisma/engines'''',''''esbuild'''']; console.log\\(JSON.stringify\\(p,null,2\\)\\)\")",
+      "Bash(mv /tmp/pkg.json package.json)"
     ]
   }
 }

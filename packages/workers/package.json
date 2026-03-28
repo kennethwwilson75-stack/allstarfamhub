@@ -12,6 +12,10 @@
   },
   "dependencies": {
     "@allstarfamhub/shared": "workspace:*",
-    "@allstarfamhub/connectors": "workspace:*"
+    "@allstarfamhub/connectors": "workspace:*",
+    "@prisma/client": "^5.22.0",
+    "bullmq": "^5.34.9",
+    "ioredis": "^5.4.2",
+    "dotenv": "^16.4.5"
   }
 }
