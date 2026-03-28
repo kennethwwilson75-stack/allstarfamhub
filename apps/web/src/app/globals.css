@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-lg font-medium
+           hover:bg-primary/90 transition-colors disabled:opacity-50
+           disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-primary-light text-primary px-4 py-2 rounded-lg font-medium
+           hover:bg-primary-light/80 transition-colors;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-white px-4 py-2 rounded-lg font-medium
+           hover:bg-danger/90 transition-colors;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg
+           focus:outline-none focus:ring-2 focus:ring-primary/50
+           focus:border-primary transition-colors;
+  }
+
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm;
+  }
+}
+
+/* FullCalendar theme overrides */
+.fc {
+  --fc-border-color: #e5e7eb;
+  --fc-button-bg-color: #1D9E75;
+  --fc-button-border-color: #1D9E75;
+  --fc-button-hover-bg-color: #178a65;
+  --fc-button-hover-border-color: #178a65;
+  --fc-button-active-bg-color: #15795a;
+  --fc-button-active-border-color: #15795a;
+  --fc-today-bg-color: #E1F5EE;
+  --fc-event-border-color: transparent;
+}
+
+.fc .fc-button {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
