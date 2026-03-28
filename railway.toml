@@ -1,0 +1,20 @@
+[build]
+builder = "nixpacks"
+
+[[services]]
+name = "api"
+startCommand = "node packages/api/dist/server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 10
+
+[[services]]
+name = "worker-sync"
+startCommand = "node packages/workers/dist/sync-worker.js"
+
+[[services]]
+name = "worker-scraper"
+startCommand = "node packages/workers/dist/scraper-worker.js"
+
+[[services]]
+name = "worker-notify"
+startCommand = "node packages/workers/dist/notify-worker.js"
