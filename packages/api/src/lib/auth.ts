@@ -44,9 +44,24 @@ export async function authenticate(
   const token = header.slice(7);
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET, {
-      algorithms: ['HS256'],
-    }) as SupabaseJwtPayload;
+   // Verify with Supabase by calling their token introspection
+const res = await fetch(`${process.env['SUPABASE_URL']}/auth/v1/user`, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+    apikey: process.env['SUPABASE_ANON_KEY'] ?? '',
+  },
+});
+
+if (!res.ok) {
+  return reply.status(401).send({
+    error: 'Unauthorized',
+    message: 'Invalid token',
+    statusCode: 401,
+  });
+}
+
+const userData = await res.json() as { id: string };
+const decoded = { sub: userData.id } as SupabaseJwtPayload;
 
     const supabaseId = decoded.sub;
     if (!supabaseId) {

@@ -6,38 +6,29 @@
  *
  * Idempotent — deletes existing demo data before re-seeding.
  */
-
+ 
 import dotenv from 'dotenv';
 import path from 'node:path';
-
+ 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
+ 
 import { PrismaClient } from '@prisma/client';
-
+ 
 const prisma = new PrismaClient();
-
+ 
 // ──────────────────────────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────────────────────────
-
+ 
 const DEMO_FAMILY_NAME = 'The Wilson Family';
-
-/** Returns a Date offset by `days` from today at the given hour/minute (local). */
+ 
 function futureDate(days: number, hour = 0, minute = 0): Date {
   const d = new Date();
   d.setDate(d.getDate() + days);
   d.setHours(hour, minute, 0, 0);
   return d;
 }
-
-/** Returns a Date offset by `days` and `hours` duration added. */
-function futureDateEnd(days: number, startHour: number, startMinute: number, durationMinutes: number): Date {
-  const d = futureDate(days, startHour, startMinute);
-  d.setMinutes(d.getMinutes() + durationMinutes);
-  return d;
-}
-
-/** Day-of-week helper: returns the next occurrence of a given weekday (0=Sun). */
+ 
 function nextWeekday(weekday: number, weeksAhead = 0): number {
   const today = new Date();
   const todayDay = today.getDay();
@@ -45,18 +36,18 @@ function nextWeekday(weekday: number, weeksAhead = 0): number {
   if (diff <= 0) diff += 7;
   return diff + weeksAhead * 7;
 }
-
+ 
 function log(msg: string): void {
   console.log(`  ✓ ${msg}`);
 }
-
+ 
 // ──────────────────────────────────────────────────────────────────
 // Connector Definitions
 // ──────────────────────────────────────────────────────────────────
-
+ 
 async function seedConnectorDefinitions(): Promise<void> {
   console.log('\n🔌 Seeding ConnectorDefinitions...');
-
+ 
   const connectors = [
     { id: 'canvas', displayName: 'Canvas LMS', category: 'lms', methods: ['OAUTH_API'], sortOrder: 10 },
     { id: 'infinite-campus', displayName: 'Infinite Campus', category: 'gradebook', methods: ['WEB_SCRAPE'], sortOrder: 20 },
@@ -69,77 +60,63 @@ async function seedConnectorDefinitions(): Promise<void> {
     { id: 'ical-generic', displayName: 'Calendar Feed (iCal)', category: 'general', methods: ['ICAL_FEED'], sortOrder: 90 },
     { id: 'email-generic', displayName: 'Email Forwarding', category: 'general', methods: ['EMAIL_PARSE'], sortOrder: 100 },
   ] as const;
-
+ 
   for (const c of connectors) {
     await prisma.connectorDefinition.upsert({
       where: { id: c.id },
-      update: {
-        displayName: c.displayName,
-        category: c.category,
-        methods: [...c.methods],
-        sortOrder: c.sortOrder,
-      },
-      create: {
-        id: c.id,
-        displayName: c.displayName,
-        category: c.category,
-        methods: [...c.methods],
-        sortOrder: c.sortOrder,
-      },
+      update: { displayName: c.displayName, category: c.category, methods: [...c.methods], sortOrder: c.sortOrder },
+      create: { id: c.id, displayName: c.displayName, category: c.category, methods: [...c.methods], sortOrder: c.sortOrder },
     });
   }
-
+ 
   log(`${connectors.length} connector definitions upserted`);
 }
-
+ 
 // ──────────────────────────────────────────────────────────────────
-// Demo Family, Users, Members, Integrations, Events, Alerts
+// Demo Family
 // ──────────────────────────────────────────────────────────────────
-
+ 
 async function seedDemoData(): Promise<void> {
   // ── Cleanup ────────────────────────────────────────────────────
   console.log('\n🧹 Cleaning existing demo data...');
-
+ 
   const existing = await prisma.family.findFirst({ where: { name: DEMO_FAMILY_NAME } });
   if (existing) {
     await prisma.family.delete({ where: { id: existing.id } });
     log('Deleted existing demo family and cascaded relations');
   }
-
-  // Also clean demo users (they are NOT cascade-deleted by family)
-  await prisma.user.deleteMany({
-    where: { supabaseId: { in: ['demo-ken-001', 'demo-sarah-001'] } },
-  });
-  log('Cleaned demo users');
-
+ 
   // ── Family ─────────────────────────────────────────────────────
   console.log('\n👨‍👩‍👧‍👦 Seeding demo family...');
-
+ 
   const family = await prisma.family.create({
     data: {
       name: DEMO_FAMILY_NAME,
       timezone: 'America/New_York',
-      plan: 'FREE',
+      plan: 'FAMILY',
     },
   });
   log(`Family created: ${family.name} (${family.id})`);
-
-  // ── Users ──────────────────────────────────────────────────────
+ 
+  // ── User (Ken — your real account) ────────────────────────────
   console.log('\n👤 Seeding users...');
-
-  const kenUser = await prisma.user.create({
-    data: { email: 'ken@example.com', supabaseId: 'demo-ken-001', displayName: 'Ken Wilson' },
+ 
+  const kenUser = await prisma.user.upsert({
+    where: { supabaseId: '3a923755-252b-4cd3-b668-1ea84344a05a' },
+    create: {
+      email: 'kenwilson75@yahoo.com',
+      supabaseId: '3a923755-252b-4cd3-b668-1ea84344a05a',
+      displayName: 'Ken Wilson',
+    },
+    update: {
+      displayName: 'Ken Wilson',
+    },
   });
   log(`User: ${kenUser.displayName}`);
-
-  const sarahUser = await prisma.user.create({
-    data: { email: 'sarah@example.com', supabaseId: 'demo-sarah-001', displayName: 'Sarah Wilson' },
-  });
-  log(`User: ${sarahUser.displayName}`);
-
+ 
   // ── Family Members ─────────────────────────────────────────────
   console.log('\n👥 Seeding family members...');
-
+ 
   const ken = await prisma.familyMember.create({
     data: {
       familyId: family.id,
@@ -150,18 +127,18 @@ async function seedDemoData(): Promise<void> {
     },
   });
   log(`Member: ${ken.displayName} (ADMIN)`);
-
+ 
+  // Sarah has no login account — just a member record
   const sarah = await prisma.familyMember.create({
     data: {
       familyId: family.id,
-      userId: sarahUser.id,
       role: 'PARENT',
       displayName: 'Sarah',
       color: '#378ADD',
     },
   });
   log(`Member: ${sarah.displayName} (PARENT)`);
-
+ 
   const emma = await prisma.familyMember.create({
     data: {
       familyId: family.id,
@@ -173,7 +150,7 @@ async function seedDemoData(): Promise<void> {
     },
   });
   log(`Member: ${emma.displayName} (CHILD, grade ${emma.grade})`);
-
+ 
   const jake = await prisma.familyMember.create({
     data: {
       familyId: family.id,
@@ -185,10 +162,10 @@ async function seedDemoData(): Promise<void> {
     },
   });
   log(`Member: ${jake.displayName} (CHILD, grade ${jake.grade})`);
-
+ 
   // ── Integrations ───────────────────────────────────────────────
   console.log('\n🔗 Seeding integrations...');
-
+ 
   const emmaCanvas = await prisma.integration.create({
     data: {
       familyId: family.id,
@@ -202,7 +179,7 @@ async function seedDemoData(): Promise<void> {
     },
   });
   log(`Integration: ${emmaCanvas.displayName}`);
-
+ 
   const emmaTrack = await prisma.integration.create({
     data: {
       familyId: family.id,
@@ -216,7 +193,7 @@ async function seedDemoData(): Promise<void> {
     },
   });
   log(`Integration: ${emmaTrack.displayName}`);
-
+ 
   const jakeCanvas = await prisma.integration.create({
     data: {
       familyId: family.id,
@@ -230,7 +207,7 @@ async function seedDemoData(): Promise<void> {
     },
   });
   log(`Integration: ${jakeCanvas.displayName}`);
-
+ 
   const jakeSoccer = await prisma.integration.create({
     data: {
       familyId: family.id,
@@ -244,7 +221,7 @@ async function seedDemoData(): Promise<void> {
     },
   });
   log(`Integration: ${jakeSoccer.displayName}`);
-
+ 
   const schoolAnnouncements = await prisma.integration.create({
     data: {
       familyId: family.id,
@@ -257,7 +234,7 @@ async function seedDemoData(): Promise<void> {
     },
   });
   log(`Integration: ${schoolAnnouncements.displayName}`);
-
+ 
   const gradeReports = await prisma.integration.create({
     data: {
       familyId: family.id,
@@ -270,10 +247,10 @@ async function seedDemoData(): Promise<void> {
     },
   });
   log(`Integration: ${gradeReports.displayName}`);
-
+ 
   // ── Events ─────────────────────────────────────────────────────
   console.log('\n📅 Seeding events...');
-
+ 
   interface EventSeed {
     title: string;
     eventType: 'ASSIGNMENT' | 'EXAM' | 'SCHOOL_EVENT' | 'NO_SCHOOL' | 'SPORTS' | 'MEETING' | 'ANNOUNCEMENT' | 'PERSONAL';
@@ -290,10 +267,10 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId?: string;
     memberIds: string[];
   }
-
+ 
   const events: EventSeed[] = [];
-
-  // ─── Emma's Assignments (20) ─────────────────────────────────
+ 
+  // ─── Emma's Assignments (20) ──────────────────────────────────
   const emmaAssignments = [
     { title: 'AP History Essay: Causes of the Civil War', day: 1, weight: 15 },
     { title: 'Chemistry Lab Report: Titration Experiment', day: 2, weight: 10 },
@@ -316,22 +293,21 @@ async function seedDemoData(): Promise<void> {
     { title: 'English Research Paper Outline', day: 26, weight: 10 },
     { title: 'Biology Lab Report: Osmosis', day: 28, weight: 10 },
   ];
-
+ 
   for (const a of emmaAssignments) {
-    const deadline = futureDate(a.day, 23, 59);
     events.push({
       title: a.title,
       eventType: 'ASSIGNMENT',
       startAt: futureDate(a.day, 8, 0),
-      deadlineAt: deadline,
+      deadlineAt: futureDate(a.day, 23, 59),
       gradeWeight: a.weight,
       priority: a.weight >= 12 ? 'HIGH' : 'NORMAL',
       sourceIntegrationId: emmaCanvas.id,
       memberIds: [emma.id],
     });
   }
-
-  // ─── Emma's Exams (3) ────────────────────────────────────────
+ 
+  // ─── Emma's Exams (3) ─────────────────────────────────────────
   events.push({
     title: 'AP History Midterm Exam',
     eventType: 'EXAM',
@@ -365,8 +341,8 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: emmaCanvas.id,
     memberIds: [emma.id],
   });
-
-  // ─── Jake's Assignments (15) ─────────────────────────────────
+ 
+  // ─── Jake's Assignments (15) ──────────────────────────────────
   const jakeAssignments = [
     { title: 'Math Word Problems: Fractions and Decimals', day: 1, weight: 5 },
     { title: 'Science Fair Project Proposal', day: 2, weight: 15 },
@@ -384,22 +360,21 @@ async function seedDemoData(): Promise<void> {
     { title: 'Science Weather Journal Week 4', day: 25, weight: 5 },
     { title: 'English Grammar Practice: Clauses', day: 27, weight: 5 },
   ];
-
+ 
   for (const a of jakeAssignments) {
-    const deadline = futureDate(a.day, 23, 59);
     events.push({
       title: a.title,
       eventType: 'ASSIGNMENT',
       startAt: futureDate(a.day, 8, 0),
-      deadlineAt: deadline,
+      deadlineAt: futureDate(a.day, 23, 59),
       gradeWeight: a.weight,
       priority: a.weight >= 12 ? 'HIGH' : 'NORMAL',
       sourceIntegrationId: jakeCanvas.id,
       memberIds: [jake.id],
     });
   }
-
-  // ─── Emma's Track Meets (8) ──────────────────────────────────
+ 
+  // ─── Emma's Track Meets (8) ───────────────────────────────────
   const trackMeets = [
     { title: 'Varsity Track: Lincoln vs. Washington', day: 3, location: 'Lincoln Stadium' },
     { title: 'JV/Varsity Track: Tri-Meet at Roosevelt', day: 6, location: 'Roosevelt Athletic Complex' },
@@ -410,7 +385,7 @@ async function seedDemoData(): Promise<void> {
     { title: 'Track: Conference Championships', day: 24, location: 'State University Track Complex' },
     { title: 'Track: District Prelims', day: 28, location: 'Metro Sports Arena' },
   ];
-
+ 
   for (const m of trackMeets) {
     events.push({
       title: m.title,
@@ -423,10 +398,10 @@ async function seedDemoData(): Promise<void> {
       memberIds: [emma.id],
     });
   }
-
-  // ─── Emma's Track Practices (MWF 3:30-5:00 for 4 weeks) ─────
+ 
+  // ─── Emma's Track Practices (MWF for 4 weeks) ─────────────────
   for (let week = 0; week < 4; week++) {
-    for (const day of [1, 3, 5]) { // Mon, Wed, Fri
+    for (const day of [1, 3, 5]) {
       const offset = nextWeekday(day, week);
       if (offset <= 30) {
         events.push({
@@ -442,23 +417,23 @@ async function seedDemoData(): Promise<void> {
       }
     }
   }
-
-  // ─── Jake's Soccer Games (12) ────────────────────────────────
+ 
+  // ─── Jake's Soccer Games (12) ─────────────────────────────────
   const soccerGames = [
-    { title: "Boys Soccer: Jefferson vs. Hamilton", day: 2, location: 'Jefferson Middle School Field' },
-    { title: "Boys Soccer: Jefferson vs. Madison", day: 5, location: 'Madison Middle School' },
-    { title: "Boys Soccer: Jefferson vs. Franklin", day: 8, location: 'Jefferson Middle School Field' },
-    { title: "Boys Soccer: Tournament Game 1", day: 10, location: 'Riverside Soccer Complex' },
-    { title: "Boys Soccer: Tournament Game 2", day: 11, location: 'Riverside Soccer Complex' },
-    { title: "Boys Soccer: Jefferson vs. Monroe", day: 14, location: 'Monroe Middle School' },
-    { title: "Boys Soccer: Jefferson vs. Lincoln JV", day: 17, location: 'Jefferson Middle School Field' },
-    { title: "Boys Soccer: Jefferson vs. Adams", day: 20, location: 'Adams Athletic Fields' },
-    { title: "Boys Soccer: Jefferson vs. Washington", day: 23, location: 'Jefferson Middle School Field' },
-    { title: "Boys Soccer: Playoff Quarterfinal", day: 25, location: 'County Sports Complex' },
-    { title: "Boys Soccer: Playoff Semifinal", day: 27, location: 'County Sports Complex' },
-    { title: "Boys Soccer: Championship Game", day: 29, location: 'Metro Stadium' },
+    { title: 'Boys Soccer: Jefferson vs. Hamilton', day: 2, location: 'Jefferson Middle School Field' },
+    { title: 'Boys Soccer: Jefferson vs. Madison', day: 5, location: 'Madison Middle School' },
+    { title: 'Boys Soccer: Jefferson vs. Franklin', day: 8, location: 'Jefferson Middle School Field' },
+    { title: 'Boys Soccer: Tournament Game 1', day: 10, location: 'Riverside Soccer Complex' },
+    { title: 'Boys Soccer: Tournament Game 2', day: 11, location: 'Riverside Soccer Complex' },
+    { title: 'Boys Soccer: Jefferson vs. Monroe', day: 14, location: 'Monroe Middle School' },
+    { title: 'Boys Soccer: Jefferson vs. Lincoln JV', day: 17, location: 'Jefferson Middle School Field' },
+    { title: 'Boys Soccer: Jefferson vs. Adams', day: 20, location: 'Adams Athletic Fields' },
+    { title: 'Boys Soccer: Jefferson vs. Washington', day: 23, location: 'Jefferson Middle School Field' },
+    { title: 'Boys Soccer: Playoff Quarterfinal', day: 25, location: 'County Sports Complex' },
+    { title: 'Boys Soccer: Playoff Semifinal', day: 27, location: 'County Sports Complex' },
+    { title: 'Boys Soccer: Championship Game', day: 29, location: 'Metro Stadium' },
   ];
-
+ 
   for (const g of soccerGames) {
     events.push({
       title: g.title,
@@ -471,10 +446,10 @@ async function seedDemoData(): Promise<void> {
       memberIds: [jake.id],
     });
   }
-
-  // ─── Jake's Soccer Practices (TTh 4-5:30, Sat 9-10:30 for 4 weeks) ──
+ 
+  // ─── Jake's Soccer Practices (TTh + Sat for 4 weeks) ──────────
   for (let week = 0; week < 4; week++) {
-    for (const day of [2, 4]) { // Tue, Thu
+    for (const day of [2, 4]) {
       const offset = nextWeekday(day, week);
       if (offset <= 30) {
         events.push({
@@ -489,7 +464,6 @@ async function seedDemoData(): Promise<void> {
         });
       }
     }
-    // Saturday
     const satOffset = nextWeekday(6, week);
     if (satOffset <= 30) {
       events.push({
@@ -504,8 +478,8 @@ async function seedDemoData(): Promise<void> {
       });
     }
   }
-
-  // ─── School Announcements & Events (5) ───────────────────────
+ 
+  // ─── School Events ─────────────────────────────────────────────
   events.push({
     title: 'Professional Development Day — Early Release',
     eventType: 'SCHOOL_EVENT',
@@ -516,7 +490,7 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: schoolAnnouncements.id,
     memberIds: [emma.id, jake.id],
   });
-
+ 
   events.push({
     title: 'Parent-Teacher Conference Night',
     eventType: 'MEETING',
@@ -530,7 +504,7 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: schoolAnnouncements.id,
     memberIds: [ken.id, sarah.id, emma.id],
   });
-
+ 
   events.push({
     title: 'Spring Arts Festival',
     eventType: 'SCHOOL_EVENT',
@@ -542,7 +516,7 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: schoolAnnouncements.id,
     memberIds: [emma.id, ken.id, sarah.id],
   });
-
+ 
   events.push({
     title: 'Jefferson Middle School Science Fair',
     eventType: 'SCHOOL_EVENT',
@@ -554,7 +528,7 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: schoolAnnouncements.id,
     memberIds: [jake.id, ken.id, sarah.id],
   });
-
+ 
   events.push({
     title: 'School Board Community Forum',
     eventType: 'ANNOUNCEMENT',
@@ -566,8 +540,7 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: schoolAnnouncements.id,
     memberIds: [ken.id, sarah.id],
   });
-
-  // ─── No-School Days (2) ──────────────────────────────────────
+ 
   events.push({
     title: 'No School — Teacher In-Service Day',
     eventType: 'NO_SCHOOL',
@@ -577,7 +550,7 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: schoolAnnouncements.id,
     memberIds: [emma.id, jake.id],
   });
-
+ 
   events.push({
     title: 'No School — Spring Break Begins',
     eventType: 'NO_SCHOOL',
@@ -587,22 +560,20 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: schoolAnnouncements.id,
     memberIds: [emma.id, jake.id],
   });
-
-  // ─── Manually Added Family Event (1) ─────────────────────────
+ 
+  // ─── Personal Family Event ─────────────────────────────────────
   events.push({
     title: "Grandma's Birthday Dinner",
     eventType: 'PERSONAL',
     startAt: futureDate(18, 18, 0),
     endAt: futureDate(18, 21, 0),
-    location: "Olive Garden, 123 Main St",
-    description: "Reservation under Wilson, party of 6.",
+    location: 'Olive Garden, 123 Main St',
+    description: 'Reservation under Wilson, party of 6.',
     priority: 'HIGH',
     memberIds: [ken.id, sarah.id, emma.id, jake.id],
   });
-
-  // ─── Conflict Events ─────────────────────────────────────────
-  // Conflict 1: Emma's track meet overlaps with a school event on day 10
-  // (Track meet at 15:30-18:00 already on day 10, add overlapping school event)
+ 
+  // ─── Conflict Events ───────────────────────────────────────────
   events.push({
     title: 'Mandatory Academic Awards Assembly',
     eventType: 'SCHOOL_EVENT',
@@ -613,9 +584,7 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: schoolAnnouncements.id,
     memberIds: [emma.id],
   });
-
-  // Conflict 2: Jake's soccer game overlaps with another event on day 14
-  // (Soccer game at 16:00-17:30 already on day 14, add overlapping event)
+ 
   events.push({
     title: 'Math Tutoring Session',
     eventType: 'MEETING',
@@ -626,10 +595,7 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: jakeCanvas.id,
     memberIds: [jake.id],
   });
-
-  // Conflict 3: Family event overlaps with both kids' activities on day 18
-  // (Grandma's Birthday at 18:00-21:00 on day 18)
-  // Emma has track practice if day 18 is MWF — add a late track event
+ 
   events.push({
     title: "Emma's Track Team Banquet",
     eventType: 'SPORTS',
@@ -639,19 +605,20 @@ async function seedDemoData(): Promise<void> {
     sourceIntegrationId: emmaTrack.id,
     memberIds: [emma.id],
   });
+ 
   events.push({
     title: "Jake's Soccer Team Pizza Party",
     eventType: 'SPORTS',
     startAt: futureDate(18, 18, 0),
     endAt: futureDate(18, 20, 0),
-    location: "Pizza Palace, 456 Oak Ave",
+    location: 'Pizza Palace, 456 Oak Ave',
     sourceIntegrationId: jakeSoccer.id,
     memberIds: [jake.id],
   });
-
-  // ── Bulk insert events + members in a transaction ──────────────
+ 
+  // ── Bulk insert events ─────────────────────────────────────────
   let eventCount = 0;
-
+ 
   await prisma.$transaction(async (tx) => {
     for (const e of events) {
       const created = await tx.familyEvent.create({
@@ -675,24 +642,22 @@ async function seedDemoData(): Promise<void> {
           externalId: e.sourceIntegrationId ? `ext-seed-${eventCount}` : null,
         },
       });
-
-      // Link members
+ 
       for (const memberId of e.memberIds) {
         await tx.eventMember.create({
           data: { eventId: created.id, memberId },
         });
       }
-
+ 
       eventCount++;
     }
   }, { timeout: 60000 });
-
+ 
   log(`${eventCount} events created with member links`);
-
-  // ── Alerts (4 unread) ──────────────────────────────────────────
+ 
+  // ── Alerts ─────────────────────────────────────────────────────
   console.log('\n🔔 Seeding alerts...');
-
-  // Find some events to link alerts to
+ 
   const jakesSoccerEvent = await prisma.familyEvent.findFirst({
     where: { familyId: family.id, title: { contains: 'Jefferson vs. Hamilton' } },
   });
@@ -702,7 +667,7 @@ async function seedDemoData(): Promise<void> {
   const ptcEvent = await prisma.familyEvent.findFirst({
     where: { familyId: family.id, title: { contains: 'Parent-Teacher Conference' } },
   });
-
+ 
   await prisma.alert.createMany({
     data: [
       {
@@ -739,12 +704,12 @@ async function seedDemoData(): Promise<void> {
       },
     ],
   });
-
+ 
   log('4 alerts created (all unread)');
-
-  // ── Notification Preferences for Ken ───────────────────────────
+ 
+  // ── Notification Preferences ───────────────────────────────────
   console.log('\n⚙️  Seeding notification preferences...');
-
+ 
   await prisma.notificationPreferences.create({
     data: {
       familyId: family.id,
@@ -766,23 +731,21 @@ async function seedDemoData(): Promise<void> {
       dailyDigestTime: '07:00',
     },
   });
-
-  log("Notification preferences created for Ken (defaults)");
+ 
+  log('Notification preferences created for Ken');
 }
-
+ 
 // ──────────────────────────────────────────────────────────────────
 // Main
 // ──────────────────────────────────────────────────────────────────
-
+ 
 async function main(): Promise<void> {
   console.log('🌱 Starting All Star Fam Hub seed...');
-
   await seedConnectorDefinitions();
   await seedDemoData();
-
   console.log('\n✅ Seed complete!\n');
 }
-
+ 
 main()
   .catch((err: unknown) => {
     console.error('❌ Seed failed:', err);
