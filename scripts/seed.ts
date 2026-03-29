@@ -685,7 +685,7 @@ async function seedDemoData(): Promise<void> {
 
       eventCount++;
     }
-  });
+  }, { timeout: 60000 });
 
   log(`${eventCount} events created with member links`);
 

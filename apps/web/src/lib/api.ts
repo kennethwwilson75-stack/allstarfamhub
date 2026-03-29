@@ -42,6 +42,11 @@ class ApiClient {
       throw error;
     }
 
+    // 204 No Content responses have no body
+    if (response.status === 204) {
+      return { data: null as unknown as T };
+    }
+
     return response.json();
   }
 

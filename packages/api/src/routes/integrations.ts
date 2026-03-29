@@ -304,6 +304,155 @@ export default async function integrationRoutes(
   );
 
   /**
+   * GET /integrations/ingest-email - Get the family's email ingest address
+   */
+  app.get('/integrations/ingest-email', async (request, reply) => {
+    const integrations = await prisma.integration.findMany({
+      where: {
+        familyId: request.auth.familyId,
+        method: 'EMAIL_PARSE',
+      },
+      select: {
+        id: true,
+        displayName: true,
+        ingestEmail: true,
+      },
+    });
+
+    return reply.send({ data: integrations });
+  });
+
+  /**
+   * GET /integrations/:id/logs - Recent sync log for an integration
+   */
+  app.get<{ Params: { id: string } }>(
+    '/integrations/:id/logs',
+    async (request, reply) => {
+      const integration = await prisma.integration.findFirst({
+        where: {
+          id: request.params.id,
+          familyId: request.auth.familyId,
+        },
+      });
+
+      if (!integration) {
+        return reply.status(404).send({
+          error: 'Not Found',
+          message: 'Integration not found',
+          statusCode: 404,
+        });
+      }
+
+      // Return recent raw items as log entries
+      const logs = await prisma.rawItem.findMany({
+        where: { integrationId: integration.id },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+        select: {
+          id: true,
+          sourceId: true,
+          parsedAt: true,
+          parseError: true,
+          processedAt: true,
+          createdAt: true,
+        },
+      });
+
+      return reply.send({
+        data: {
+          integrationId: integration.id,
+          lastSyncAt: integration.lastSyncAt,
+          lastSyncStatus: integration.lastSyncStatus,
+          lastSyncError: integration.lastSyncError,
+          logs,
+        },
+      });
+    },
+  );
+
+  /**
+   * GET /integrations/:id/auth-url - Get OAuth URL for an integration
+   */
+  app.get<{ Params: { id: string } }>(
+    '/integrations/:id/auth-url',
+    async (request, reply) => {
+      const integration = await prisma.integration.findFirst({
+        where: {
+          id: request.params.id,
+          familyId: request.auth.familyId,
+        },
+      });
+
+      if (!integration) {
+        return reply.status(404).send({
+          error: 'Not Found',
+          message: 'Integration not found',
+          statusCode: 404,
+        });
+      }
+
+      if (integration.method !== 'OAUTH_API') {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'Integration does not use OAuth',
+          statusCode: 400,
+        });
+      }
+
+      // TODO: Build real OAuth URL from connector.oauthConfigJson
+      const authUrl = `https://oauth.example.com/authorize?integration_id=${integration.id}`;
+
+      return reply.send({ data: { authUrl } });
+    },
+  );
+
+  /**
+   * POST /integrations/:id/auth-callback - Handle OAuth code exchange
+   */
+  app.post<{ Params: { id: string } }>(
+    '/integrations/:id/auth-callback',
+    async (request, reply) => {
+      const integration = await prisma.integration.findFirst({
+        where: {
+          id: request.params.id,
+          familyId: request.auth.familyId,
+        },
+      });
+
+      if (!integration) {
+        return reply.status(404).send({
+          error: 'Not Found',
+          message: 'Integration not found',
+          statusCode: 404,
+        });
+      }
+
+      const { code } = request.body as { code?: string };
+      if (!code) {
+        return reply.status(400).send({
+          error: 'Bad Request',
+          message: 'Missing authorization code',
+          statusCode: 400,
+        });
+      }
+
+      // TODO: Exchange code for tokens using connector's OAuth config
+      // For now, mark integration as active
+      const updated = await prisma.integration.update({
+        where: { id: integration.id },
+        data: { status: 'ACTIVE' },
+      });
+
+      return reply.send({
+        data: {
+          id: updated.id,
+          status: updated.status,
+        },
+      });
+    },
+  );
+
+  /**
    * GET /connectors - List available connector definitions
    */
   app.get('/connectors', async (_request, reply) => {

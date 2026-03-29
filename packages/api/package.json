@@ -10,7 +10,7 @@
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
-    "seed": "tsx ../scripts/seed.ts"
+    "seed": "tsx ../../scripts/seed.ts"
   },
   "dependencies": {
     "@allstarfamhub/connectors": "workspace:*",

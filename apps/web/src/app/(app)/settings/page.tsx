@@ -30,7 +30,7 @@ export default function SettingsPage() {
   const { data: family, isLoading } = useQuery<Family>({
     queryKey: ['family'],
     queryFn: async () => {
-      const { data } = await api.get<Family>('/family');
+      const { data } = await api.get<Family>('/families/me');
       return data;
     },
   });
@@ -44,7 +44,8 @@ export default function SettingsPage() {
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      await api.patch('/family', { name: familyName, timezone });
+      if (!family) return;
+      await api.patch(`/families/${family.id}`, { name: familyName, timezone });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['family'] });

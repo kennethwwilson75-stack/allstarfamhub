@@ -129,6 +129,44 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
   });
 
   /**
+   * GET /auth/me - Get current user's profile from token
+   */
+  app.get(
+    '/auth/me',
+    { preHandler: [authenticate] },
+    async (request, reply) => {
+      const user = await prisma.user.findUnique({
+        where: { id: request.auth.userId },
+        include: {
+          members: {
+            take: 1,
+            orderBy: { createdAt: 'asc' },
+          },
+        },
+      });
+
+      if (!user || !user.members[0]) {
+        return reply.status(404).send({
+          error: 'Not Found',
+          message: 'User not found',
+          statusCode: 404,
+        });
+      }
+
+      const member = user.members[0];
+      return reply.send({
+        data: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName,
+          familyId: member.familyId,
+          role: member.role,
+        },
+      });
+    },
+  );
+
+  /**
    * POST /auth/login
    */
   app.post('/auth/login', async (request, reply) => {

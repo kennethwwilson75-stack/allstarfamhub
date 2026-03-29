@@ -10,8 +10,14 @@ import { EventCard } from '@/components/EventCard';
 import { AlertCard } from '@/components/AlertCard';
 import type { FamilyEvent, Alert, FamilyMember } from '@allstarfamhub/shared';
 
+interface EventMemberJoin {
+  eventId: string;
+  memberId: string;
+  member: FamilyMember;
+}
+
 interface EventWithMembers extends FamilyEvent {
-  members?: FamilyMember[];
+  members?: EventMemberJoin[];
   sourceConnectorId?: string;
 }
 
@@ -50,7 +56,7 @@ export default function TodayPage() {
   });
 
   async function handleMarkRead(alertId: string) {
-    await api.patch(`/alerts/${alertId}`, { readAt: new Date().toISOString() });
+    await api.patch(`/alerts/${alertId}/read`);
   }
 
   return (
@@ -99,8 +105,8 @@ export default function TodayPage() {
                     endAt={event.endAt as unknown as string | null}
                     allDay={event.allDay}
                     location={event.location}
-                    memberName={event.members?.[0]?.displayName}
-                    memberColor={event.members?.[0]?.color}
+                    memberName={event.members?.[0]?.member?.displayName}
+                    memberColor={event.members?.[0]?.member?.color}
                     source={event.sourceConnectorId}
                     status={event.status}
                     priority={event.priority}
@@ -131,8 +137,8 @@ export default function TodayPage() {
                     endAt={event.endAt as unknown as string | null}
                     allDay={event.allDay}
                     location={event.location}
-                    memberName={event.members?.[0]?.displayName}
-                    memberColor={event.members?.[0]?.color}
+                    memberName={event.members?.[0]?.member?.displayName}
+                    memberColor={event.members?.[0]?.member?.color}
                     source={event.sourceConnectorId}
                     status={event.status}
                     priority={event.priority}

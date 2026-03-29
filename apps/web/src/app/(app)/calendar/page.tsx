@@ -9,8 +9,14 @@ import { MemberChip } from '@/components/MemberChip';
 import { Card } from '@/components/Card';
 import type { FamilyEvent, FamilyMember } from '@allstarfamhub/shared';
 
+interface EventMemberJoin {
+  eventId: string;
+  memberId: string;
+  member: FamilyMember;
+}
+
 interface EventWithMembers extends FamilyEvent {
-  members?: FamilyMember[];
+  members?: EventMemberJoin[];
   sourceConnectorId?: string;
 }
 
@@ -43,7 +49,7 @@ export default function CalendarPage() {
 
   const filteredEvents = events?.filter((event: EventWithMembers) => {
     if (selectedMemberIds.size === 0) return true;
-    return event.members?.some((m: FamilyMember) => selectedMemberIds.has(m.id));
+    return event.members?.some((m: EventMemberJoin) => selectedMemberIds.has(m.memberId));
   });
 
   const calendarEvents = (filteredEvents ?? []).map((event: EventWithMembers) => ({
@@ -52,14 +58,14 @@ export default function CalendarPage() {
     start: event.startAt as unknown as string,
     end: event.endAt as unknown as string | null,
     allDay: event.allDay,
-    color: event.members?.[0]?.color ?? '#1D9E75',
+    color: event.members?.[0]?.member?.color ?? '#1D9E75',
     extendedProps: {
       location: event.location,
       status: event.status,
       priority: event.priority,
       source: event.sourceConnectorId,
-      memberName: event.members?.[0]?.displayName,
-      memberColor: event.members?.[0]?.color,
+      memberName: event.members?.[0]?.member?.displayName,
+      memberColor: event.members?.[0]?.member?.color,
     },
   }));
 
@@ -144,8 +150,8 @@ export default function CalendarPage() {
                 status: selectedEvent.status,
                 priority: selectedEvent.priority,
                 source: selectedEvent.sourceConnectorId,
-                memberName: selectedEvent.members?.[0]?.displayName,
-                memberColor: selectedEvent.members?.[0]?.color,
+                memberName: selectedEvent.members?.[0]?.member?.displayName,
+                memberColor: selectedEvent.members?.[0]?.member?.color,
                 signupUrl: selectedEvent.signupUrl,
                 requiresSignup: selectedEvent.requiresSignup,
               }

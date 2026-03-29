@@ -28,7 +28,7 @@ export default function AlertsPage() {
 
   const markReadMutation = useMutation({
     mutationFn: async (alertId: string) => {
-      await api.patch(`/alerts/${alertId}`, { readAt: new Date().toISOString() });
+      await api.patch(`/alerts/${alertId}/read`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
@@ -37,7 +37,7 @@ export default function AlertsPage() {
 
   const dismissMutation = useMutation({
     mutationFn: async (alertId: string) => {
-      await api.patch(`/alerts/${alertId}`, { dismissedAt: new Date().toISOString() });
+      await api.delete(`/alerts/${alertId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
@@ -46,7 +46,7 @@ export default function AlertsPage() {
 
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      await api.post('/alerts/mark-all-read');
+      await api.patch('/alerts/read-all');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['alerts'] });

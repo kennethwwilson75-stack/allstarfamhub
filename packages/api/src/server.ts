@@ -9,10 +9,12 @@ import rateLimit from '@fastify/rate-limit';
 // Route plugins
 import authRoutes from './routes/auth.js';
 import familyRoutes from './routes/families.js';
+import memberRoutes from './routes/members.js';
 import eventRoutes from './routes/events.js';
 import integrationRoutes from './routes/integrations.js';
 import alertRoutes from './routes/alerts.js';
 import webhookRoutes from './routes/webhooks.js';
+import adminRoutes from './routes/admin.js';
 
 const PORT = Number(process.env['PORT'] ?? 3001);
 const HOST = '0.0.0.0';
@@ -76,10 +78,12 @@ async function buildServer() {
   // ─── Register Route Plugins ────────────────────────────────────────
   await app.register(authRoutes, { prefix: '/' });
   await app.register(familyRoutes, { prefix: '/' });
+  await app.register(memberRoutes, { prefix: '/' });
   await app.register(eventRoutes, { prefix: '/' });
   await app.register(integrationRoutes, { prefix: '/' });
   await app.register(alertRoutes, { prefix: '/' });
   await app.register(webhookRoutes, { prefix: '/' });
+  await app.register(adminRoutes, { prefix: '/' });
 
   // ─── Global Error Handler ──────────────────────────────────────────
   app.setErrorHandler((error: Error & { statusCode?: number }, _request, reply) => {
