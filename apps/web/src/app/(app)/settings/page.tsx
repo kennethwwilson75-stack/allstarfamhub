@@ -27,7 +27,7 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState('America/New_York');
   const [saved, setSaved] = useState(false);
 
-  const { data: family, isLoading } = useQuery({
+  const { data: family, isLoading } = useQuery<Family>({
     queryKey: ['family'],
     queryFn: async () => {
       const { data } = await api.get<Family>('/family');

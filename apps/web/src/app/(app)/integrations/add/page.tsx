@@ -25,7 +25,7 @@ export default function AddIntegrationPage() {
   const [feedUrl, setFeedUrl] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<IntegrationMethod>('WEB_SCRAPE');
 
-  const { data: connectors, isLoading } = useQuery({
+  const { data: connectors, isLoading } = useQuery<ConnectorDefinition[]>({
     queryKey: ['connectors'],
     queryFn: async () => {
       const { data } = await api.get<ConnectorDefinition[]>('/connectors');
@@ -33,7 +33,7 @@ export default function AddIntegrationPage() {
     },
   });
 
-  const { data: members } = useQuery({
+  const { data: members } = useQuery<FamilyMember[]>({
     queryKey: ['members'],
     queryFn: async () => {
       const { data } = await api.get<FamilyMember[]>('/members');
@@ -107,9 +107,9 @@ export default function AddIntegrationPage() {
           ) : connectors && connectors.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {connectors
-                .filter((c) => c.isActive)
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-                .map((connector) => (
+                .filter((c: ConnectorDefinition) => c.isActive)
+                .sort((a: ConnectorDefinition, b: ConnectorDefinition) => a.sortOrder - b.sortOrder)
+                .map((connector: ConnectorDefinition) => (
                   <button
                     key={connector.id}
                     onClick={() => handleSelectConnector(connector)}
@@ -162,7 +162,7 @@ export default function AddIntegrationPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 >
                   <option value="">Whole family</option>
-                  {members.map((m) => (
+                  {members.map((m: FamilyMember) => (
                     <option key={m.id} value={m.id}>
                       {m.displayName}
                     </option>
@@ -178,7 +178,7 @@ export default function AddIntegrationPage() {
                   Connection Method
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {selectedConnector.methods.map((method) => (
+                  {selectedConnector.methods.map((method: string) => (
                     <button
                       key={method}
                       type="button"

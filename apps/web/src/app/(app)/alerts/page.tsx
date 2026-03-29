@@ -15,7 +15,7 @@ export default function AlertsPage() {
   const [filter, setFilter] = useState<FilterOption>('all');
   const queryClient = useQueryClient();
 
-  const { data: alerts, isLoading } = useQuery({
+  const { data: alerts, isLoading } = useQuery<Alert[]>({
     queryKey: ['alerts', filter],
     queryFn: async () => {
       const params: Record<string, string | number | boolean> = { limit: 50 };
@@ -53,7 +53,7 @@ export default function AlertsPage() {
     },
   });
 
-  const unreadCount = alerts?.filter((a) => !a.readAt).length ?? 0;
+  const unreadCount = alerts?.filter((a: Alert) => !a.readAt).length ?? 0;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -111,7 +111,7 @@ export default function AlertsPage() {
           </div>
         ) : alerts && alerts.length > 0 ? (
           <div className="divide-y divide-gray-100">
-            {alerts.map((alert) => (
+            {alerts.map((alert: Alert) => (
               <div key={alert.id} className="p-4">
                 <AlertCard
                   type={alert.type}

@@ -19,7 +19,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function checkAuth() {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Type assertion needed: pnpm doesn't hoist @supabase/auth-js types
+        const { data: { session } } = await (supabase.auth as unknown as { getSession: () => Promise<{ data: { session: unknown } }> }).getSession();
         if (!session) {
           clearAuth();
           router.push('/login');

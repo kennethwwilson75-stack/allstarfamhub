@@ -7,7 +7,18 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm lint:*)",
       "Bash(node -e \"const p=JSON.parse\\(require\\(''''fs''''\\).readFileSync\\(''''/dev/stdin'''',''''utf8''''\\)\\); p.pnpm = p.pnpm || {}; p.pnpm.onlyBuiltDependencies = [''''prisma'''',''''@prisma/engines'''',''''esbuild'''']; console.log\\(JSON.stringify\\(p,null,2\\)\\)\")",
-      "Bash(mv /tmp/pkg.json package.json)"
+      "Bash(mv /tmp/pkg.json package.json)",
+      "Bash(grep -n \"export function useQuery\" C:/Projects/allstar-famhub/allstarfamhub/node_modules/.pnpm/@tanstack+react-query@*/node_modules/@tanstack/react-query/build/modern/useQuery.d.ts)",
+      "Bash(npx tsc:*)",
+      "Bash(grep -rn NoInfer C:/Projects/allstar-famhub/allstarfamhub/apps/web/node_modules/@tanstack/query-core/build/modern/*.d.ts)",
+      "Bash(grep -rn \"getSession\\\\|supabase-js\" C:/Projects/allstar-famhub/allstarfamhub/node_modules/.pnpm/@supabase+supabase-js@*/node_modules/@supabase/supabase-js/package.json)",
+      "Bash(grep -rn getSession C:/Projects/allstar-famhub/allstarfamhub/apps/web/node_modules/@supabase/auth-js/dist/module/*.d.ts)",
+      "Bash(find C:/Projects/allstar-famhub/allstarfamhub/apps/web/node_modules/@supabase/ -name *.d.ts -path */auth*)",
+      "Bash(grep -rn getSession C:/Projects/allstar-famhub/allstarfamhub/apps/web/node_modules/@supabase/supabase-js/dist/module/*.d.ts)",
+      "Bash(pnpm install:*)",
+      "Bash(CI=true pnpm install)",
+      "Bash(CI=true pnpm install --no-frozen-lockfile)",
+      "Bash(pnpm store:*)"
     ]
   }
 }

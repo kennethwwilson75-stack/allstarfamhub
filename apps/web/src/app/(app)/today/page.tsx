@@ -18,7 +18,7 @@ interface EventWithMembers extends FamilyEvent {
 export default function TodayPage() {
   const today = new Date();
 
-  const { data: events, isLoading: eventsLoading } = useQuery({
+  const { data: events, isLoading: eventsLoading } = useQuery<EventWithMembers[]>({
     queryKey: ['events', 'today'],
     queryFn: async () => {
       const { data } = await api.get<EventWithMembers[]>('/events', {
@@ -29,7 +29,7 @@ export default function TodayPage() {
     },
   });
 
-  const { data: tomorrowEvents } = useQuery({
+  const { data: tomorrowEvents } = useQuery<EventWithMembers[]>({
     queryKey: ['events', 'tomorrow'],
     queryFn: async () => {
       const tomorrow = startOfTomorrow();
@@ -41,7 +41,7 @@ export default function TodayPage() {
     },
   });
 
-  const { data: alerts, isLoading: alertsLoading } = useQuery({
+  const { data: alerts, isLoading: alertsLoading } = useQuery<Alert[]>({
     queryKey: ['alerts', 'recent'],
     queryFn: async () => {
       const { data } = await api.get<Alert[]>('/alerts', { unread: true, limit: 5 });
@@ -91,7 +91,7 @@ export default function TodayPage() {
               </div>
             ) : events && events.length > 0 ? (
               <div className="space-y-3">
-                {events.map((event) => (
+                {events.map((event: EventWithMembers) => (
                   <EventCard
                     key={event.id}
                     title={event.title}
@@ -123,7 +123,7 @@ export default function TodayPage() {
                 <CardTitle>Tomorrow</CardTitle>
               </CardHeader>
               <div className="space-y-2">
-                {tomorrowEvents.slice(0, 3).map((event) => (
+                {tomorrowEvents.slice(0, 3).map((event: EventWithMembers) => (
                   <EventCard
                     key={event.id}
                     title={event.title}
@@ -174,7 +174,7 @@ export default function TodayPage() {
               </div>
             ) : alerts && alerts.length > 0 ? (
               <div className="space-y-3">
-                {alerts.map((alert) => (
+                {alerts.map((alert: Alert) => (
                   <AlertCard
                     key={alert.id}
                     type={alert.type}

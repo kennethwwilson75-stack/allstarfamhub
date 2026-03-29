@@ -31,7 +31,7 @@ export default function MembersPage() {
   const [schoolName, setSchoolName] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: members, isLoading } = useQuery({
+  const { data: members, isLoading } = useQuery<FamilyMember[]>({
     queryKey: ['members'],
     queryFn: async () => {
       const { data } = await api.get<FamilyMember[]>('/members');
@@ -140,7 +140,7 @@ export default function MembersPage() {
         </div>
       ) : members && members.length > 0 ? (
         <div className="space-y-3">
-          {members.map((member) => (
+          {members.map((member: FamilyMember) => (
             <Card key={member.id}>
               <div className="flex items-center gap-4">
                 <div

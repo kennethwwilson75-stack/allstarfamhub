@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Card } from '@/components/Card';
-import { supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import type { AuthResponse } from '@allstarfamhub/shared';
@@ -39,21 +38,6 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // Create account in Supabase
-      const { error: supaError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { display_name: displayName },
-        },
-      });
-
-      if (supaError) {
-        setError(supaError.message);
-        return;
-      }
-
-      // Register with our API (creates family, member, etc.)
       const { data } = await api.post<AuthResponse>('/auth/register', {
         email,
         password,

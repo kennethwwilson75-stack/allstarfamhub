@@ -19,7 +19,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof
 };
 
 export default function IntegrationsPage() {
-  const { data: integrations, isLoading } = useQuery({
+  const { data: integrations, isLoading } = useQuery<Integration[]>({
     queryKey: ['integrations'],
     queryFn: async () => {
       const { data } = await api.get<Integration[]>('/integrations');
@@ -27,7 +27,7 @@ export default function IntegrationsPage() {
     },
   });
 
-  const { data: connectors } = useQuery({
+  const { data: connectors } = useQuery<ConnectorDefinition[]>({
     queryKey: ['connectors'],
     queryFn: async () => {
       const { data } = await api.get<ConnectorDefinition[]>('/connectors');
@@ -36,7 +36,7 @@ export default function IntegrationsPage() {
   });
 
   function getConnectorName(connectorId: string): string {
-    const connector = connectors?.find((c) => c.id === connectorId);
+    const connector = connectors?.find((c: ConnectorDefinition) => c.id === connectorId);
     return connector?.displayName ?? connectorId;
   }
 
@@ -68,7 +68,7 @@ export default function IntegrationsPage() {
         </div>
       ) : integrations && integrations.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {integrations.map((integration) => {
+          {integrations.map((integration: Integration) => {
             const statusConfig = STATUS_CONFIG[integration.status] ?? STATUS_CONFIG.PENDING;
             const StatusIcon = statusConfig.icon;
 

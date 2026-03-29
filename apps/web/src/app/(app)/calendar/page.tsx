@@ -20,7 +20,7 @@ export default function CalendarPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const { data: members } = useQuery({
+  const { data: members } = useQuery<FamilyMember[]>({
     queryKey: ['members'],
     queryFn: async () => {
       const { data } = await api.get<FamilyMember[]>('/members');
@@ -28,7 +28,7 @@ export default function CalendarPage() {
     },
   });
 
-  const { data: events, isLoading } = useQuery({
+  const { data: events, isLoading } = useQuery<EventWithMembers[]>({
     queryKey: ['events', 'calendar', dateRange?.start?.toISOString(), dateRange?.end?.toISOString()],
     queryFn: async () => {
       if (!dateRange) return [];
@@ -41,12 +41,12 @@ export default function CalendarPage() {
     enabled: !!dateRange,
   });
 
-  const filteredEvents = events?.filter((event) => {
+  const filteredEvents = events?.filter((event: EventWithMembers) => {
     if (selectedMemberIds.size === 0) return true;
-    return event.members?.some((m) => selectedMemberIds.has(m.id));
+    return event.members?.some((m: FamilyMember) => selectedMemberIds.has(m.id));
   });
 
-  const calendarEvents = (filteredEvents ?? []).map((event) => ({
+  const calendarEvents = (filteredEvents ?? []).map((event: EventWithMembers) => ({
     id: event.id,
     title: event.title,
     start: event.startAt as unknown as string,
@@ -63,7 +63,7 @@ export default function CalendarPage() {
     },
   }));
 
-  const selectedEvent = events?.find((e) => e.id === selectedEventId);
+  const selectedEvent = events?.find((e: EventWithMembers) => e.id === selectedEventId);
 
   const handleDateRangeChange = useCallback((start: Date, end: Date) => {
     setDateRange({ start, end });
@@ -95,7 +95,7 @@ export default function CalendarPage() {
       {/* Member filters */}
       {members && members.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {members.map((member) => (
+          {members.map((member: FamilyMember) => (
             <MemberChip
               key={member.id}
               name={member.displayName}
