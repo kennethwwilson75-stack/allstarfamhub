@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { Puzzle, Plus, RefreshCw, AlertCircle, Pause, Play, Settings2 } from 'lucide-react';
 import { api } from '@/lib/api';
-import { Card, CardHeader, CardTitle } from '@/components/Card';
+import { Card } from '@/components/Card';
 import { Button } from '@/components/Button';
 import { cn } from '@/lib/utils';
 import type { Integration, ConnectorDefinition } from '@allstarfamhub/shared';

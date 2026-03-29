@@ -55,7 +55,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
 
     checkAuth();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch unread alert count
   const { data: alertsData } = useQuery({
